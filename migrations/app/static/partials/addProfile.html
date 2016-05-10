@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+
+{% block js %}
+{% endblock %}
+
+
+{% block main %}
+
+{% include "navbar2.html" %}
+
+<div class="container">
+    
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+                    {% for error in field_errors %}
+                        <li>{{ form[field_name].label }} {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form role="form" method="post" action="{{ url_for('add_profile') }}" enctype="multipart/form-data" >
+        {{ form.csrf_token }}
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.firstname.label }}
+            {{ form.firstname(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.lastname.label }}
+            {{ form.lastname(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.sex.label }}
+            <div>
+                {% for subfield in form.sex %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form.age.label }}
+            {{ form.age(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.img.label }}
+            {{ form.img }}
+        </div>
+        <button type="submit" class="btn btn-primary">Submit now</button>
+    </form>
+    <div class="footer">
+        620067669 © 2016 
+    </div>
+  
+</div>
+
+{% endblock %}

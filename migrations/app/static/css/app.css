@@ -1,0 +1,57 @@
+body{
+    background-color: #3F50BF;
+}
+.wish-header{
+    background-image: url("/static/img/header-background.png");
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+.intro-header {
+    padding-top: 50px; 
+    padding-bottom: 50px;
+    text-align: center;
+    color:#C0C0C0;
+    background: url(/static/img/headerimg.jpg) no-repeat center center;
+    background-size: 100% 100%;
+}
+
+.intro-message {
+    position: relative;
+    padding-top: 10%;
+    padding-bottom: 10%;
+}
+
+.intro-message > h1 {
+    text-align: center;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+    font-size: 5em;
+    word-wrap: break-word;
+    font-family: "Courier" ,Georgia,Serif;
+}
+
+.intro-divider {
+    width: 250px;
+    border-top:2px     groove   #000000;
+    border-color: black;
+    border-bottom: 1px  double rgba(197, 100, 14, 0.18);
+}
+
+.intro-message > h3 {
+    font-family:Arial Verdana;
+    word-wrap: break-word;
+}
+
+
+.footer{
+    background-color:black;
+    color:white;
+    clear:both;
+    text-align:center;
+   padding:2.5px;	 	 
+
+    
+
+}
