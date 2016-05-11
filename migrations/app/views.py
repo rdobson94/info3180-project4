@@ -12,6 +12,9 @@ from datetime import datetime, timedelta
 import jwt
 import base64
 import os
+import bcrypt
+import json
+from app.models import User, Wish, Token
 
 from functools import wraps
 from flask import Flask, request, jsonify, _request_ctx_stack
@@ -105,25 +108,16 @@ def get_auth_token(id, name, email):
 @app.route('/api/user/login', methods=['POST'])
 @cross_origin(headers=['Content-Type', 'Authorization'])
 def login():
-    email       = request.form.get('email')
-    password    = request.form.get('password')
-    
-    if email is None or password is None:
-        return jsonify({"error":1,"data":{},"message":"All fields are required"})
-        
-    user = db.session.query(User).filter_by(email = email).first()
-    if user is not None and user.verify_password(password):
-        response = {}
-        response['error']           = None
-        response['data']            = {}
-        response['data']['token']   = get_auth_token(user.id,user.name,email)
-        response['data']['expires'] = datetime.utcnow() + timedelta(days=1)
-        response['data']['user']    = {"_id":user.id, "email":email, "name":user.name}
-        response['message']         = "Success"
-        
-        return jsonify(response)
-    
-    return jsonify({"error":1,"data":{},"message":"Incorrect email or password"})
+    json_data = json.loads(request.data)
+    user = db.session.query(User).filter_by(email=json_data['email']).first()
+    if user and user.password == bcrypt.hashpw(json_data.get('password').encode('utf-8'), user.password.decode().encode('utf-8')):
+        token = Token(user.id)
+        db.session.add(token)
+        db.session.commit()
+        response = jsonify({"error":"null","data":{'id':user.id,'username':json_data.get('username'),'token':token.token},"message":"Welcome, You are now logged in"})
+    else:
+        response = jsonify({"error":"1","data":{},"message":'Authentication failed'})
+    return response
     
 @app.route('/api/user', methods=['GET'])
 @requires_auth
@@ -140,7 +134,22 @@ def get_user():
 @cross_origin(headers=['Content-Type', 'Authorization'])
 @requires_auth
 def wishlist(id):
-    if request.method == 'POST':
+    if request.method=="GET":
+        wishlistItems = db.session.query(Wishlist).filter_by(userid=id).all()
+        if wishlistItems is None:
+            return jsonify({"errors":1, "data":{}, "message":"There are no wishlists associated here."})
+        
+        wishes = []    
+        for wish in wishlistItems:
+            wishes.append({"title":wish.title, "description":wish.description, "url":wish.url, "thumbnail":wish.thumbnail})
+        
+        response = {}
+        response['error']           = None
+        response['data']            = {}
+        response['data']['wishes']  = wishes
+        response['message']         = "Confirmed"
+        return jsonify(response)
+    else:
         title       = request.form.get('title')
         description = request.form.get('description')
         url         = request.form.get('url')
@@ -168,22 +177,8 @@ def wishlist(id):
         response['data']['wishes']  = wishes
         response['message']         = "Your wish has just been successfully added!"
         return jsonify(response)
-        
-    else:
-        wishlistItems = db.session.query(Wishlist).filter_by(userid=id).all()
-        if wishlistItems is None:
-            return jsonify({"errors":1, "data":{}, "message":"There are no wishlists associated here."})
-        
-        wishes = []    
-        for wish in wishlistItems:
-            wishes.append({"title":wish.title, "description":wish.description, "url":wish.url, "thumbnail":wish.thumbnail})
-        
-        response = {}
-        response['error']           = None
-        response['data']            = {}
-        response['data']['wishes']  = wishes
-        response['message']         = "Confirmed"
-        return jsonify(response)
+
+    
     
 @app.route('/api/user/<int:id>/wishlist/share', methods=['POST'])
 @cross_origin(headers=['Content-Type', 'Authorization'])
@@ -236,3 +231,7 @@ def processThumbnail():
     url = request.args.get('url')
     response = thumbnailer.get_data(url)
     return jsonify(response)
+    
+    
+   
+    
